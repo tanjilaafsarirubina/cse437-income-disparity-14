@@ -55,31 +55,45 @@ cse437-income-disparity-14/
 │
 ├── figures/
 │   ├── fig1_rq1_education_disparity.png
-│   └── fig2_rq2_sector_fnr.png
+│   └── fig2_rq3_sector_fnr.png
 │
 └── report/
     ├── report.pdf           # Formal 10-page project report
     └── report.md            # Markdown version of report
+```
 
 ## 5. Setup & Execution Instructions
+
 ### 1. Environment Setup
 
 Clone the repository and install required packages:
-git clone [https://github.com/](https://github.com/)<your_username>/cse437-income-disparity-14.git
+
+```bash
+git clone https://github.com/tanjilaafsarirubina/cse437-income-disparity-14.git
 cd cse437-income-disparity-14
 pip install -r requirements.txt
+```
 
+### 2. Dataset Acquisition
 
-## Dataset Acquisition
-The preprocessed 30,000-record dataset (data/processed/texas_cleaned_30k.csv, ~2.6 MB) is included directly in this repository so notebooks 03 through 05 run out-of-the-box.  The raw Census microdata (psam_p48.csv, ~1.1 GB) exceeds the 50 MB GitHub commit threshold and is hosted on Google Drive:Dataset Google Drive Link: https://drive.google.com/drive/folders/<your_folder_id>?usp=sharing[cite: 10]To fetch it automatically into data/raw/, run:
+The preprocessed 30,000-record dataset (`data/processed/texas_cleaned_30k.csv`, ~2.6 MB) is included directly in this repository so notebooks 03 through 05 run out-of-the-box. The raw Census microdata (`psam_p48.csv`, ~1.1 GB) exceeds the 50 MB GitHub commit threshold and is hosted on Google Drive:
 
+**Dataset Google Drive Link:** https://drive.google.com/drive/folders/1E6GYPV0siUHCq2ohG6EdfZky0AJJOXd3?usp=drive_link[cite: 10]
+
+To fetch it automatically into `data/raw/`, run:
+
+```bash
 python src/download_data.py
+```
 
-## Running the Notebooks
+### 3. Running the Notebooks
+
 Execute the notebooks in numerical order from top to bottom on a clean kernel:
-notebooks/01_data_audit_and_eda.ipynb  
-notebooks/02_preprocessing.ipynb  
-notebooks/03_feature_engineering.ipynb  
-notebooks/04_modeling_and_tuning.ipynb  
-notebooks/05_evaluation_and_error_analysis.ipynb
 
+```bash
+notebooks/01_data_audit_and_eda.ipynb
+notebooks/02_preprocessing.ipynb
+notebooks/03_feature_engineering.ipynb
+notebooks/04_modeling_and_tuning.ipynb
+notebooks/05_evaluation_and_error_analysis.ipynb
+```
