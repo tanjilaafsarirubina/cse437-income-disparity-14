@@ -5,10 +5,11 @@
 - **Dataset:** U.S. Census Bureau, American Community Survey (ACS) 2023 1-Year Public Use Microdata Sample (PUMS), Texas person records
 - **Portal:** https://www.census.gov/programs-surveys/acs/microdata.html
 - **File name:** `psam_p48.csv`
-- **Size:** ~1.1 GB uncompressed, about 300,000 person records × ~290 columns (notebook 01 prints the exact shape)
+- **Size:** 212 MB (53 MB zipped): 301,984 person records × 287 columns
+- **Direct download:** [`csv_ptx.zip`](https://www2.census.gov/programs-surveys/acs/data/pums/2023/1-Year/csv_ptx.zip) from the Census Bureau, which also contains the PUMS README
 - **License:** Public domain U.S. Government data (13 U.S.C. § 9)
 
-The file is too large for GitHub, so we host a copy in a public Google Drive folder:
+The file is too large to commit, so we also keep a copy in a public Google Drive folder:
 https://drive.google.com/drive/folders/1E6GYPV0siUHCq2ohG6EdfZky0AJJOXd3?usp=sharing
 
 To download it into `data/raw/`, run this from the repository root:
@@ -17,14 +18,14 @@ To download it into `data/raw/`, run this from the repository root:
 python src/download_data.py
 ```
 
-Or download `psam_p48.csv` yourself and save it as `data/raw/psam_p48.csv`. Notebooks 01–02 and scripts 01–03 read it from there.
+Or download the Census Bureau's `csv_ptx.zip` (link above) and unzip `psam_p48.csv` into `data/raw/`. Both sources contain the identical file. Notebooks 01–02 and scripts 01–03 read it from there.
 
 ## 2. Processed dataset (committed)
 
 - **File:** `data/processed/texas_cleaned_30k.csv` (~2.6 MB, 30,000 rows, 13 columns)
-- **Produced by:** `notebooks/02_preprocessing.ipynb` (or `scripts/03_data_preprocessing_and_subsampling.py`)
+- **Produced by:** `notebooks/02_preprocessing.ipynb` or `scripts/03_data_preprocessing_and_subsampling.py`. Both regenerate it byte for byte from the raw file, and CI checks this on every push.
 - **Contents:** A simple random sample (`random_state=42`) of civilians who were employed and at work (`ESR == 1`), worked at least 35 hours a week (`WKHP >= 35`), had positive earnings (`PERNP > 0`), and were aged 16–80. Weekly hours are capped at 98.
-- **Why it is committed:** Notebooks 03–05 and scripts 04–08 run from this file, so the results can be reproduced without the 1.1 GB download.
+- **Why it is committed:** Notebooks 03–05 and scripts 04–08 run from this file, so the results can be reproduced without the raw file.
 
 | Column | Description |
 | --- | --- |

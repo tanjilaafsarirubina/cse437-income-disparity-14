@@ -59,7 +59,7 @@ parser = argparse.ArgumentParser(description=__doc__.splitlines()[2])
 parser.add_argument(
     "--from-processed",
     action="store_true",
-    help="skip scripts 01-03, which need the 1.1 GB raw Census file",
+    help="skip scripts 01-03, which need the raw Census file in data/raw/",
 )
 args = parser.parse_args()
 

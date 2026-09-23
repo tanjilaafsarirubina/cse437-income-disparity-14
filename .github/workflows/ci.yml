@@ -16,14 +16,31 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
 
-      # Scripts 01-03 and notebooks 01-02 need the 1.1 GB raw Census file,
-      # so CI starts from the committed 30,000-record sample.
-      - name: Run scripts 04-08
-        run: python scripts/run_all_check.py --from-processed
+      # The raw file comes straight from the Census Bureau (53 MB zip) and is
+      # cached between runs.
+      - name: Cache the raw Census file
+        id: raw-cache
+        uses: actions/cache@v6
+        with:
+          path: data/raw/psam_p48.csv
+          key: acs-pums-2023-1yr-texas-persons
+      - name: Download the raw Census file
+        if: steps.raw-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/csv_ptx.zip" \
+            https://www2.census.gov/programs-surveys/acs/data/pums/2023/1-Year/csv_ptx.zip
+          unzip -o "$RUNNER_TEMP/csv_ptx.zip" psam_p48.csv -d data/raw
 
-      - name: Execute notebooks 03-05
-        run: >
-          jupyter nbconvert --to notebook --execute --output-dir "$RUNNER_TEMP"
-          notebooks/03_feature_engineering.ipynb
-          notebooks/04_modeling_and_tuning.ipynb
-          notebooks/05_evaluation_and_error_analysis.ipynb
+      - name: Run scripts 01-08
+        run: python scripts/run_all_check.py
+
+      # Script 03 rewrites the committed sample from the raw file. It must come
+      # out identical (ignoring line endings: the committed copy was written on
+      # Windows).
+      - name: Check the committed 30k sample is reproduced exactly
+        run: |
+          git show HEAD:data/processed/texas_cleaned_30k.csv | tr -d '\r' > "$RUNNER_TEMP/committed.csv"
+          tr -d '\r' < data/processed/texas_cleaned_30k.csv | diff -q "$RUNNER_TEMP/committed.csv" -
+
+      - name: Execute notebooks 01-05
+        run: jupyter nbconvert --to notebook --execute --output-dir "$RUNNER_TEMP" notebooks/*.ipynb

@@ -56,7 +56,7 @@ flowchart LR
     G --> H["Subgroup audit<br/>+ hypothesis tests"]
 ```
 
-- **Data.** The [American Community Survey 1-year Public Use Microdata Sample](https://www.census.gov/programs-surveys/acs/microdata.html) for Texas, 2023: one row per surveyed person, with about 290 variables.
+- **Data.** The [American Community Survey 1-year Public Use Microdata Sample](https://www.census.gov/programs-surveys/acs/microdata.html) for Texas, 2023: one row per surveyed person (301,984 people × 287 columns).
 - **Cohort and target.** We kept civilians who were employed and at work (`ESR = 1`), worked at least 35 hours a week, had positive earnings, and were aged 16–80. We capped weekly hours at 98. The target `HIGH_EARNER` is 1 when annual earnings (`PERNP`) are at or above the cohort's 75th percentile, which is exactly $90,000.
 - **Features.** Age and weekly hours, standardized. Sex, marital status, 8 class-of-worker sectors, 12 occupation groups (collapsed from about 500 Census occupation codes), and 4 education tiers (collapsed from 24 codes), one-hot encoded with the first level dropped. We dropped weeks worked because almost everyone in a full-time cohort works 50–52 weeks. The scaler and encoder are fit on the training split only.
 - **Models.** `LinearSVC` (primal solver), tuned with 3-fold cross-validated grid search over C ∈ {0.01, 0.1, 1, 10}, and `LogisticRegression` as a second linear model family. All random seeds are fixed at 42.
@@ -77,13 +77,13 @@ flowchart LR
 │   └── export_models.py        # Re-exports the two models in models/
 ├── src/download_data.py        # Downloads the raw Census file into data/raw/
 ├── data/
-│   ├── raw/                    # psam_p48.csv goes here (~1.1 GB, not committed)
+│   ├── raw/                    # psam_p48.csv goes here (212 MB, not committed)
 │   ├── processed/              # texas_cleaned_30k.csv, the 30,000-record sample
 │   └── README.md               # Data sources and column descriptions
 ├── models/                     # Trained LinearSVC and LogisticRegression (joblib)
 ├── figures/                    # The two figures above
 ├── report/report.pdf           # 10-page project report
-└── .github/workflows/ci.yml    # Runs the pipeline on every push
+└── .github/workflows/ci.yml    # Reruns the full pipeline on every push
 ```
 
 ## Getting started
@@ -98,7 +98,7 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Reproduce the results (no large download)
+### Reproduce the results from the committed sample
 
 The repository includes the 30,000-record sample, so everything from feature engineering onward runs in about a minute:
 
@@ -110,17 +110,18 @@ This runs scripts 04–08. They split the data, train and tune the models, print
 
 ### Run the full pipeline from the raw Census file
 
-Notebooks 01–02 and scripts 01–03 start from the raw 1.1 GB Census file. Download it into `data/raw/`, then run everything:
+Notebooks 01–02 and scripts 01–03 start from the raw Census file (`psam_p48.csv`, 212 MB). Download it into `data/raw/`, then run everything:
 
 ```bash
 python src/download_data.py
 python scripts/run_all_check.py
 ```
 
-`download_data.py` gets the file from our Google Drive copy. You can also download it from the [Census Bureau](https://www.census.gov/programs-surveys/acs/microdata.html) and save it as `data/raw/psam_p48.csv`. See [`data/README.md`](data/README.md) for details.
+`download_data.py` gets the file from our Google Drive copy. The same file is in the Census Bureau's [`csv_ptx.zip`](https://www2.census.gov/programs-surveys/acs/data/pums/2023/1-Year/csv_ptx.zip) (53 MB), so you can also unzip `psam_p48.csv` from there into `data/raw/`. The full run takes about a minute, and script 03 regenerates `data/processed/texas_cleaned_30k.csv` byte for byte. See [`data/README.md`](data/README.md) for details.
 
 ## Reproducibility notes
 
+- CI downloads the raw file from the Census Bureau, reruns all eight scripts and all five notebooks, and fails unless the regenerated 30,000-record sample matches the committed one exactly.
 - Every number in this README was regenerated from the committed code, data and models. A few figures in the PDF report differ slightly. The notebooks are the source of truth.
 - `models/` contains the LinearSVC with C = 1.0 that the report uses, and it can be rebuilt with `scripts/export_models.py`. With current scikit-learn versions, the grid search in notebook 04 picks C = 10 instead, because its cross-validated F1 is 0.001 higher (0.5864 vs. 0.5852, with a standard deviation of about 0.006 across folds). The two models disagree on 1 of the 6,000 test predictions, and none of the findings change. Running notebook 04 overwrites `models/` with the model the grid search picks.
 
