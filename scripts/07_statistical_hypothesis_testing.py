@@ -23,16 +23,14 @@ from scipy import stats
 # ==============================================================================
 # 1. Portable File Path Resolution
 # ==============================================================================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Inputs live in data/processed/, resolved from the repository root
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.join(REPO_ROOT, "data", "processed")
 eval_file = os.path.join(BASE_DIR, "test_predictions_evaluated.csv")
 
 if not os.path.exists(eval_file):
-    BASE_DIR = os.getcwd()
-    eval_file = os.path.join(BASE_DIR, "test_predictions_evaluated.csv")
-
-if not os.path.exists(eval_file):
     raise FileNotFoundError(
-        f"Could not locate 'test_predictions_evaluated.csv' in '{BASE_DIR}'. "
+        f"Could not locate '{eval_file}'. "
         "Please ensure '05_model_training_and_baseline_evaluation.py' has been executed."
     )
 
@@ -90,8 +88,8 @@ p_val_1 = stats.norm.cdf(z_1)
 # Exact binomial companion test (addressing zero-success boundary condition)
 binom_res = stats.binomtest(k=int(pred_high_f), n=n_f, p=p_actual_f, alternative="less")
 
-print(f"Null Hypothesis (H0) Benchmark (p_0):       {p_actual_f:.4f} (8.29%)")
-print(f"Observed Sample Proportion (p_hat):        {p_pred_f:.4f} (0.00%)")
+print(f"Null Hypothesis (H0) Benchmark (p_0):       {p_actual_f:.4f} ({p_actual_f * 100:.2f}%)")
+print(f"Observed Sample Proportion (p_hat):        {p_pred_f:.4f} ({p_pred_f * 100:.2f}%)")
 print(f"Standard Error (SE):                       {se_1:.4f}")
 print(f"Test Statistic (z):                        {z_1:.4f}")
 print(f"Asymptotic p-value (Normal Approximation): {p_val_1:.4e} (p < 0.001)")
@@ -122,8 +120,8 @@ z_2 = (p_pred_m - p_pred_f) / se_2
 p_val_2 = 2 * stats.norm.sf(abs(z_2))
 
 print(f"Pooled Proportion (p_c):                   {p_c:.4f}")
-print(f"Predicted Proportion Men (p_hat_m):        {p_pred_m:.4f} (6.30%)")
-print(f"Predicted Proportion Women (p_hat_f):      {p_pred_f:.4f} (0.00%)")
+print(f"Predicted Proportion Men (p_hat_m):        {p_pred_m:.4f} ({p_pred_m * 100:.2f}%)")
+print(f"Predicted Proportion Women (p_hat_f):      {p_pred_f:.4f} ({p_pred_f * 100:.2f}%)")
 print(f"Standard Error (SE):                       {se_2:.4f}")
 print(f"Test Statistic (z):                        {z_2:.4f}")
 print(f"Two-Tailed p-value:                        {p_val_2:.4e} (p < 0.001)")

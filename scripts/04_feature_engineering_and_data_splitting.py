@@ -22,16 +22,14 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 # ==============================================================================
 # 1. Portable File Path Resolution
 # ==============================================================================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Inputs and outputs live in data/processed/, resolved from the repository root
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.join(REPO_ROOT, "data", "processed")
 file_path = os.path.join(BASE_DIR, "texas_cleaned_30k.csv")
 
 if not os.path.exists(file_path):
-    BASE_DIR = os.getcwd()
-    file_path = os.path.join(BASE_DIR, "texas_cleaned_30k.csv")
-
-if not os.path.exists(file_path):
     raise FileNotFoundError(
-        f"Could not locate 'texas_cleaned_30k.csv' in '{BASE_DIR}'. "
+        f"Could not locate '{file_path}'. "
         "Please run '03_data_preprocessing_and_subsampling.py' first."
     )
 
@@ -69,8 +67,8 @@ df["SEX_LABEL"] = df["SEX"].map({1: "Male", 2: "Female"})
 # 3. Feature Selection & Metadata Isolation
 # ==============================================================================
 # Core predictive features:
-#   - Categorical (5): SEX_LABEL (RQ1), COW_GROUP (RQ2), OCCP_GROUP, SCHL_TIER (RQ1), MAR
-#   - Numeric (2):     AGEP (RQ1 trajectory), WKHP
+#   - Categorical (5): SEX_LABEL (RQ1), COW_GROUP (RQ3), OCCP_GROUP, SCHL_TIER (RQ1), MAR
+#   - Numeric (2):     AGEP (RQ2 trajectory), WKHP
 categorical_features = ["SEX_LABEL", "COW_GROUP", "OCCP_GROUP", "SCHL_TIER", "MAR"]
 numeric_features = ["AGEP", "WKHP"]
 feature_cols = categorical_features + numeric_features

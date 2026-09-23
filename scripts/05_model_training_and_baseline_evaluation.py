@@ -21,9 +21,9 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import LinearSVC
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-if not os.path.exists(os.path.join(BASE_DIR, "X_train.csv")):
-    BASE_DIR = os.getcwd()
+# Inputs and outputs live in data/processed/, resolved from the repository root
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.join(REPO_ROOT, "data", "processed")
 
 # 1. Load data partitions
 X_train = pd.read_csv(os.path.join(BASE_DIR, "X_train.csv"))

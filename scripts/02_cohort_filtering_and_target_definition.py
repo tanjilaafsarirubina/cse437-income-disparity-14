@@ -14,19 +14,14 @@ import pandas as pd
 # ==============================================================================
 # 1. Portable File Path Configuration
 # ==============================================================================
-# Resolve paths dynamically relative to script location for grader reproducibility
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(BASE_DIR, "psam_p48.csv")
-
-# Fallback to current working directory if script executed from root
-if not os.path.exists(file_path):
-    BASE_DIR = os.getcwd()
-    file_path = os.path.join(BASE_DIR, "psam_p48.csv")
+# Resolve the raw file from the repository root so the script runs from any directory
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+file_path = os.path.join(REPO_ROOT, "data", "raw", "psam_p48.csv")
 
 if not os.path.exists(file_path):
     raise FileNotFoundError(
-        f"Could not locate 'psam_p48.csv' in '{BASE_DIR}'. "
-        "Please place the raw Census Texas CSV file in the working directory."
+        f"Could not locate '{file_path}'. "
+        "Download it with 'python src/download_data.py' (see data/README.md)."
     )
 
 # ==============================================================================
@@ -40,7 +35,7 @@ if not os.path.exists(file_path):
 #   - SEX:   Demographic sex identifier (RQ1)
 #   - SCHL:  Educational attainment tier (RQ1)
 #   - MAR:   Marital status control
-#   - COW:   Class of worker / employment sector (RQ2)
+#   - COW:   Class of worker / employment sector (RQ3)
 #   - OCCP:  4-digit SOC occupation code
 #   - WKWN:  Weeks worked (inspected for labor attachment, omitted downstream for parsimony)
 cols_to_use = [

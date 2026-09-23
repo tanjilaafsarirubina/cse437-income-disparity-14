@@ -8,9 +8,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Read results from data/processed/ and write figures to figures/
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.join(REPO_ROOT, "data", "processed")
+FIGURES_DIR = os.path.join(REPO_ROOT, "figures")
+os.makedirs(FIGURES_DIR, exist_ok=True)
 eval_file = os.path.join(BASE_DIR, "test_predictions_evaluated.csv")
-cow_file = os.path.join(BASE_DIR, "rq2_cow_errors.csv")
+cow_file = os.path.join(BASE_DIR, "rq3_cow_errors.csv")
 
 df_eval = pd.read_csv(eval_file)
 cow_df = pd.read_csv(cow_file)
@@ -39,19 +43,19 @@ ax.legend(frameon=True)
 ax.grid(axis="y", linestyle="--", alpha=0.5)
 
 plt.tight_layout()
-fig_1_path = os.path.join(BASE_DIR, "fig1_rq1_education_disparity.png")
+fig_1_path = os.path.join(FIGURES_DIR, "fig1_rq1_education_disparity.png")
 plt.savefig(fig_1_path)
 print(f"[SUCCESS] Saved: {fig_1_path}")
 
 # -------------------------------------------------------------
-# Figure 2: RQ2 False Negative Rate by Class of Work
+# Figure 2: RQ3 False Negative Rate by Class of Work
 # -------------------------------------------------------------
 fig, ax = plt.subplots(figsize=(9, 5), dpi=300)
 sorted_cow = cow_df.sort_values(by="FNR_%", ascending=True)
 
 bars = ax.barh(sorted_cow["COW_GROUP"], sorted_cow["FNR_%"], color="#2f5597")
 ax.set_xlabel("False Negative Rate (FNR %)", fontsize=11, fontweight="bold")
-ax.set_title("RQ2: False Negative Rate by Class of Work (High-Earner Omission)", fontsize=12, fontweight="bold")
+ax.set_title("RQ3: False Negative Rate by Class of Work (High-Earner Omission)", fontsize=12, fontweight="bold")
 ax.grid(axis="x", linestyle="--", alpha=0.5)
 
 for bar in bars:
@@ -59,6 +63,6 @@ for bar in bars:
     ax.text(w + 1, bar.get_y() + bar.get_height()/2, f"{w:.1f}%", va="center", fontsize=9)
 
 plt.tight_layout()
-fig_2_path = os.path.join(BASE_DIR, "fig2_rq2_sector_fnr.png")
+fig_2_path = os.path.join(FIGURES_DIR, "fig2_rq3_sector_fnr.png")
 plt.savefig(fig_2_path)
 print(f"[SUCCESS] Saved: {fig_2_path}")

@@ -1,6 +1,6 @@
 """
 CSE437 Final Project: Disparity and Error Analysis in Linear Income Classification
-Script 06: Subgroup Disparity Auditing and Sectoral Error Evaluation (RQ1 & RQ2)
+Script 06: Subgroup Disparity Auditing and Sectoral Error Evaluation (RQ1-RQ3)
 
 Purpose:
     Executes post-hoc disaggregated model auditing on held-out test predictions:
@@ -8,11 +8,12 @@ Purpose:
          - Measures predicted high-earner rates across Education Tiers partitioned by Gender.
          - Compares predicted rates against empirical test set ground truth to quantify 
            decision threshold amplification and subgroup erasure.
-         - Computes predicted high-earner rates across five working-age cohorts (16-80).
       2. Evaluates Research Question 2 (RQ2):
+         - Computes predicted high-earner rates across five working-age cohorts (16-80).
+      3. Evaluates Research Question 3 (RQ3):
          - Computes subgroup-sliced classification error metrics across Class of Work (COW):
            Total Error Rate (%), False Positive Rate (FPR %), and False Negative Rate (FNR %).
-         - Exports structured evaluation tables for tabular presentation in the final report.
+      Exports structured evaluation tables for tabular presentation in the final report.
 """
 
 import os
@@ -22,17 +23,14 @@ import pandas as pd
 # ==============================================================================
 # 1. Portable File Path Resolution
 # ==============================================================================
-# Resolve paths relative to script location for reproducible grading
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Inputs and outputs live in data/processed/, resolved from the repository root
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.join(REPO_ROOT, "data", "processed")
 eval_file = os.path.join(BASE_DIR, "test_predictions_evaluated.csv")
 
 if not os.path.exists(eval_file):
-    BASE_DIR = os.getcwd()
-    eval_file = os.path.join(BASE_DIR, "test_predictions_evaluated.csv")
-
-if not os.path.exists(eval_file):
     raise FileNotFoundError(
-        f"Could not locate 'test_predictions_evaluated.csv' in '{BASE_DIR}'. "
+        f"Could not locate '{eval_file}'. "
         "Please run '05_model_training_and_baseline_evaluation.py' first."
     )
 
@@ -40,7 +38,7 @@ print(f"[STATUS] Ingesting evaluated test set from: {os.path.basename(eval_file)
 df_eval = pd.read_csv(eval_file)
 
 # ==============================================================================
-# 2. Research Question 1: Gender Disparities Across Education & Age Cohorts
+# 2. Research Questions 1 & 2: Gender Disparities Across Education & Age Cohorts
 # ==============================================================================
 # Discretize continuous age into standard demographic labor force brackets
 age_bins = [15, 29, 39, 49, 59, 81]
@@ -50,7 +48,7 @@ df_eval["AGE_BRACKET"] = pd.cut(
 )
 
 # ------------------------------------------------------------------------------
-# RQ1 (Part A): Predicted vs. Empirical High-Earner Rates Across Education
+# RQ1: Predicted vs. Empirical High-Earner Rates Across Education
 # ------------------------------------------------------------------------------
 edu_order = ["Less_than_HS", "HS_or_Some_College", "Bachelors", "Graduate_Plus"]
 
@@ -75,7 +73,7 @@ actual_by_edu["Actual_Gap (M - F)"] = (
 )
 
 # ------------------------------------------------------------------------------
-# RQ1 (Part B): Predicted High-Earner Trajectories Across Life Cohorts
+# RQ2: Predicted High-Earner Trajectories Across Life Cohorts
 # ------------------------------------------------------------------------------
 pred_by_age = (
     df_eval.groupby(["AGE_BRACKET", "SEX_LABEL"])["PRED_HIGH_EARNER"]
@@ -95,13 +93,13 @@ print("-" * 65)
 print((actual_by_edu * 100).round(2).to_string())
 
 print("\n" + "=" * 65)
-print("RQ1: PREDICTED HIGH-EARNER PROPORTIONS ACROSS AGE COHORTS (%)")
+print("RQ2: PREDICTED HIGH-EARNER PROPORTIONS ACROSS AGE COHORTS (%)")
 print("=" * 65)
 print((pred_by_age * 100).round(2).to_string())
 print("=" * 65)
 
 # ==============================================================================
-# 3. Research Question 2: Error Disparities Across Class of Work (COW)
+# 3. Research Question 3: Error Disparities Across Class of Work (COW)
 # ==============================================================================
 def compute_cow_metrics(group: pd.DataFrame) -> pd.Series:
     """
@@ -147,7 +145,7 @@ cow_table = (
 )
 
 print("\n" + "=" * 65)
-print("RQ2: CLASSIFICATION ERROR PROFILES BY CLASS OF WORK (COW)")
+print("RQ3: CLASSIFICATION ERROR PROFILES BY CLASS OF WORK (COW)")
 print("=" * 65)
 print(cow_table.to_string())
 print("=" * 65)
@@ -158,7 +156,7 @@ print("=" * 65)
 # Save structured artifacts for reporting and viva verification
 pred_by_edu.to_csv(os.path.join(BASE_DIR, "rq1_education_gap.csv"))
 actual_by_edu.to_csv(os.path.join(BASE_DIR, "rq1_actual_ground_truth.csv"))
-pred_by_age.to_csv(os.path.join(BASE_DIR, "rq1_age_gap.csv"))
-cow_table.to_csv(os.path.join(BASE_DIR, "rq2_cow_errors.csv"))
+pred_by_age.to_csv(os.path.join(BASE_DIR, "rq2_age_gap.csv"))
+cow_table.to_csv(os.path.join(BASE_DIR, "rq3_cow_errors.csv"))
 
 print(f"\n[SUCCESS] All evaluation tables successfully exported to: {BASE_DIR}")

@@ -1,3 +1,13 @@
+"""
+CSE437 Final Project: Disparity and Error Analysis in Linear Income Classification
+Script: export_models.py
+
+Purpose:
+    Retrains both linear classifiers on data/processed/X_train.csv (written by script 04)
+    and serializes them to models/ with joblib. LinearSVC is fixed at C=1.0, the setting
+    used in the final report.
+"""
+
 import os
 from pathlib import Path
 import joblib
@@ -5,8 +15,8 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 
-# Resolve paths
-REPO_ROOT = Path.cwd()
+# Resolve paths from the repository root so the script runs from any directory
+REPO_ROOT = Path(__file__).resolve().parents[1]
 PROCESSED_DIR = REPO_ROOT / "data" / "processed"
 MODELS_DIR = REPO_ROOT / "models"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)

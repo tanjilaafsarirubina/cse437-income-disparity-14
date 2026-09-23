@@ -21,20 +21,17 @@ import pandas as pd
 # ==============================================================================
 # 1. Portable Path Resolution
 # ==============================================================================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(BASE_DIR, "psam_p48.csv")
-
-if not os.path.exists(file_path):
-    BASE_DIR = os.getcwd()
-    file_path = os.path.join(BASE_DIR, "psam_p48.csv")
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+file_path = os.path.join(REPO_ROOT, "data", "raw", "psam_p48.csv")
 
 if not os.path.exists(file_path):
     raise FileNotFoundError(
-        f"Could not locate 'psam_p48.csv' in '{BASE_DIR}'. "
-        "Ensure the Texas ACS PUMS CSV file is located in the working directory."
+        f"Could not locate '{file_path}'. "
+        "Download it with 'python src/download_data.py' (see data/README.md)."
     )
 
-output_file = os.path.join(BASE_DIR, "texas_cleaned_30k.csv")
+output_file = os.path.join(REPO_ROOT, "data", "processed", "texas_cleaned_30k.csv")
+os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
 # ==============================================================================
 # 2. Variable Loading and Type Sanitization
@@ -144,7 +141,7 @@ print(df["HIGH_EARNER"].value_counts(normalize=True).apply(lambda x: f"{x*100:.2
 # ==============================================================================
 # 7. Subsampling and Export
 # ==============================================================================
-# Draw a stratified random sample of 30,000 records for fast, stable LinearSVC convergence
+# Draw a reproducible simple random sample of 30,000 records for fast, stable LinearSVC convergence
 df_sampled = df.sample(n=30000, random_state=42).reset_index(drop=True)
 
 df_sampled.to_csv(output_file, index=False)

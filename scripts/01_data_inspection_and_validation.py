@@ -14,33 +14,17 @@ import pandas as pd
 # ==============================================================================
 # 1. Directory and File Path Configuration
 # ==============================================================================
-# Use current working directory or script directory to ensure portability across machines
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Resolve the raw file from the repository root so the script runs from any directory
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+file_path = os.path.join(REPO_ROOT, "data", "raw", "psam_p48.csv")
 
-# Look for raw Census PUMS CSV in current script folder or working directory
-csv_files = [
-    f
-    for f in os.listdir(BASE_DIR)
-    if f.endswith(".csv") and not f.startswith("test_")
-]
-
-# Fallback check if CSV is located in current working directory
-if not csv_files:
-    BASE_DIR = os.getcwd()
-    csv_files = [
-        f
-        for f in os.listdir(BASE_DIR)
-        if f.endswith(".csv") and not f.startswith("test_")
-    ]
-
-if not csv_files:
+if not os.path.exists(file_path):
     raise FileNotFoundError(
-        f"No raw ACS PUMS CSV file found in '{BASE_DIR}'. "
-        "Please ensure 'psam_p48.csv' (or raw Texas PUMS file) is present in the working directory."
+        f"Could not locate '{file_path}'. "
+        "Download it with 'python src/download_data.py' (see data/README.md)."
     )
 
-file_path = os.path.join(BASE_DIR, csv_files[0])
-print(f"[STATUS] Ingesting raw microdata file: {csv_files[0]}")
+print(f"[STATUS] Ingesting raw microdata file: {os.path.basename(file_path)}")
 
 # ==============================================================================
 # 2. Raw Dataset Ingestion
@@ -72,9 +56,9 @@ print(f"Memory Footprint in RAM: {ram_usage_mb:.2f} MB")
 #   - WKHP:  Usual hours worked per week past 12 months (full-time filter: >= 35)
 #   - ESR:   Employment status recode (civilian employed filter: ESR == 1)
 #   - SEX:   Demographic sex identifier (focal variable for RQ1)
-#   - AGEP:  Reported person age (experience / life cohort control)
+#   - AGEP:  Reported person age (experience control; life cohort analysis for RQ2)
 #   - SCHL:  Educational attainment level (credential tier analysis for RQ1)
-#   - COW:   Class of worker / employment sector (focal variable for RQ2)
+#   - COW:   Class of worker / employment sector (focal variable for RQ3)
 #   - OCCP:  4-digit Standard Occupational Classification code (domain grouping)
 target_and_core_vars = ["PERNP", "WKHP", "ESR", "SEX", "AGEP", "SCHL", "COW", "OCCP"]
 missing_vars = [var for var in target_and_core_vars if var not in df_raw.columns]
