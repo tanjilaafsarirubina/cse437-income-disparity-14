@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      # Scripts 01-03 and notebooks 01-02 need the 1.1 GB raw Census file,
+      # so CI starts from the committed 30,000-record sample.
+      - name: Run scripts 04-08
+        run: python scripts/run_all_check.py --from-processed
+
+      - name: Execute notebooks 03-05
+        run: >
+          jupyter nbconvert --to notebook --execute --output-dir "$RUNNER_TEMP"
+          notebooks/03_feature_engineering.ipynb
+          notebooks/04_modeling_and_tuning.ipynb
+          notebooks/05_evaluation_and_error_analysis.ipynb

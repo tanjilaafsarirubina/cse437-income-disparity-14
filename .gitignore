@@ -1,0 +1,22 @@
+# Raw Census file (~1.1 GB): fetch it with `python src/download_data.py`
+data/raw/*
+!data/raw/.gitkeep
+
+# Intermediate files that the scripts and notebooks regenerate
+data/processed/*
+!data/processed/texas_cleaned_30k.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
