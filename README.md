@@ -7,7 +7,7 @@
 
 We trained linear classifiers to predict whether a full-time worker in Texas earns in the top quartile (at least $90,000 a year), using 2023 U.S. Census microdata. Then we audited where the model goes wrong. The model is about as accurate as you would expect from a linear baseline (F1 = 0.58 on the high-earner class), but it **never predicts a high earner among women without a bachelor's degree**. In the test set, 8.3% of women whose highest education is high school or some college earn at least $90,000, and the model predicts 0%. For men with the same education, it predicts 6.3%.
 
-This was our final project for CSE437 (Data Science), Summer 2026. The full write-up is in [`report/report.pdf`](report/report.pdf).
+This was our final project for CSE437 (Data Science), Summer 2026. The full write-up is in [`report/report.pdf`](report/report.pdf), which you can also read on GitHub as [`report/report.md`](report/report.md).
 
 ![Actual vs. predicted high-earner rates by education and gender](figures/fig1_rq1_education_disparity.png)
 
@@ -20,7 +20,7 @@ We asked three research questions. All numbers are for the held-out test set of 
 1. **Education and gender (RQ1): the model erases lower-credentialed women.**
    - Of 1,267 women whose highest education is high school or some college, 105 (8.29%) are high earners. The model predicts none. For the 1,779 men in the same tier it predicts 112 (6.30%).
    - A one-sample z-test of the predicted rate against the actual rate gives z = −10.70 (exact binomial p = 2.5 × 10⁻⁴⁸). A two-sample test of predicted men vs. predicted women gives z = 9.10 (p ≈ 9 × 10⁻²⁰).
-   - Where the model does predict high earners, it widens the gap it sees in the data. Among bachelor's degree holders, the actual gender gap is 25.4 percentage points (52.0% of men vs. 26.5% of women). The predicted gap is 42.2 points (52.2% vs. 10.0%).
+   - Where the model does predict high earners, it widens the gap it sees in the data. Among bachelor's degree holders, the actual gender gap is 25.4 percentage points (52.0% of men vs. 26.5% of women). The predicted gap is 42.1 points (52.2% vs. 10.1%).
    - The logistic regression model also predicts 0% for women in both non-degree tiers. The erasure comes from the linear decision boundary, not from one particular algorithm.
 
 2. **Age (RQ2): the predicted gender gap grows with age.** It is 6.4 points for workers aged 16–29 (9.2% of men vs. 2.8% of women predicted as high earners) and 23.4 points for workers aged 60–80 (35.7% vs. 12.3%).
@@ -39,7 +39,7 @@ Both models were trained on the same 24,000 records and evaluated once on the 6,
 | --- | ---: | ---: | ---: | ---: |
 | Majority-class baseline | 73.65% | 0.00% | 0.00% | 0.00% |
 | Logistic regression | 80.47% | 67.14% | 50.66% | 57.75% |
-| LinearSVC (C = 1.0) | 80.58% | 67.72% | 50.28% | **57.71%** |
+| LinearSVC (C = 10) | 80.57% | 67.66% | 50.28% | 57.69% |
 
 The two model families perform almost identically. The audit uses the LinearSVC predictions.
 
@@ -59,7 +59,7 @@ flowchart LR
 - **Data.** The [American Community Survey 1-year Public Use Microdata Sample](https://www.census.gov/programs-surveys/acs/microdata.html) for Texas, 2023: one row per surveyed person (301,984 people × 287 columns).
 - **Cohort and target.** We kept civilians who were employed and at work (`ESR = 1`), worked at least 35 hours a week, had positive earnings, and were aged 16–80. We capped weekly hours at 98. The target `HIGH_EARNER` is 1 when annual earnings (`PERNP`) are at or above the cohort's 75th percentile, which is exactly $90,000.
 - **Features.** Age and weekly hours, standardized. Sex, marital status, 8 class-of-worker sectors, 12 occupation groups (collapsed from about 500 Census occupation codes), and 4 education tiers (collapsed from 24 codes), one-hot encoded with the first level dropped. We dropped weeks worked because almost everyone in a full-time cohort works 50–52 weeks. The scaler and encoder are fit on the training split only.
-- **Models.** `LinearSVC` (primal solver), tuned with 3-fold cross-validated grid search over C ∈ {0.01, 0.1, 1, 10}, and `LogisticRegression` as a second linear model family. All random seeds are fixed at 42.
+- **Models.** `LinearSVC` (primal solver), tuned with 3-fold cross-validated grid search over C ∈ {0.01, 0.1, 1, 10}, which picks C = 10. `LogisticRegression`, with its default settings, serves as a second linear model family. All random seeds are fixed at 42.
 - **Audit.** We compared predicted and actual high-earner rates across education × gender and age × gender. We computed false positive and false negative rates for each sector, and tested the largest disparity with z-tests and an exact binomial test (the exact test matters because the model predicts zero successes).
 
 ## Repository structure
@@ -73,8 +73,7 @@ flowchart LR
 │   ├── 04_modeling_and_tuning.ipynb
 │   └── 05_evaluation_and_error_analysis.ipynb
 ├── scripts/                    # The same pipeline as plain Python scripts (01–08)
-│   ├── run_all_check.py        # Runs the scripts in order and checks their outputs
-│   └── export_models.py        # Re-exports the two models in models/
+│   └── run_all_check.py        # Runs the scripts in order and checks their outputs
 ├── src/download_data.py        # Downloads the raw Census file into data/raw/
 ├── data/
 │   ├── raw/                    # psam_p48.csv goes here (212 MB, not committed)
@@ -82,7 +81,10 @@ flowchart LR
 │   └── README.md               # Data sources and column descriptions
 ├── models/                     # Trained LinearSVC and LogisticRegression (joblib)
 ├── figures/                    # The two figures above
-├── report/report.pdf           # 10-page project report
+├── report/
+│   ├── report.pdf              # 10-page project report
+│   ├── report.md               # Its source, readable on GitHub
+│   └── build_pdf.py            # Rebuilds report.pdf from report.md
 └── .github/workflows/ci.yml    # Reruns the full pipeline on every push
 ```
 
@@ -122,8 +124,9 @@ python scripts/run_all_check.py
 ## Reproducibility notes
 
 - CI downloads the raw file from the Census Bureau, reruns all eight scripts and all five notebooks, and fails unless the regenerated 30,000-record sample matches the committed one exactly.
-- Every number in this README was regenerated from the committed code, data and models. A few figures in the PDF report differ slightly. The notebooks are the source of truth.
-- `models/` contains the LinearSVC with C = 1.0 that the report uses, and it can be rebuilt with `scripts/export_models.py`. With current scikit-learn versions, the grid search in notebook 04 picks C = 10 instead, because its cross-validated F1 is 0.001 higher (0.5864 vs. 0.5852, with a standard deviation of about 0.006 across folds). The two models disagree on 1 of the 6,000 test predictions, and none of the findings change. Running notebook 04 overwrites `models/` with the model the grid search picks.
+- Every number in this README and in the report comes from running the committed code on the Census file. `models/` holds exactly the models that notebook 04 and script 05 produce.
+- The grid search's top two settings are nearly tied: C = 10 beats C = 1 by 0.001 in cross-validated F1 (0.5864 vs. 0.5852, with a standard deviation of about 0.006 across folds). The two models disagree on 1 of the 6,000 test predictions, so the findings do not depend on the choice.
+- The report was revised after grading to fix numbers that did not match the code. The graded version is still in the git history: `git show 32b1670:report/report.pdf > report_graded.pdf`.
 
 ## Limitations
 
