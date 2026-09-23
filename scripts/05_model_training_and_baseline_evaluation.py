@@ -5,9 +5,11 @@ Script 05: Hyperparameter Tuning, Multi-Model Comparison, and Baseline Evaluatio
 Requirements Satisfied:
   - Hyperparameter Tuning: GridSearchCV across C on LinearSVC.
   - Multi-Model Validation: Compares LinearSVC against LogisticRegression.
+  - Serializes both fitted models to models/ (the same files notebook 04 writes).
 """
 
 import os
+import joblib
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
@@ -111,3 +113,10 @@ test_meta.to_csv(eval_output_path, index=False)
 comparison_df.to_csv(os.path.join(BASE_DIR, "model_family_comparison.csv"), index=False)
 
 print(f"\n[SUCCESS] Exported evaluated test data to: {eval_output_path}")
+
+# Serialize both fitted models
+MODELS_DIR = os.path.join(REPO_ROOT, "models")
+os.makedirs(MODELS_DIR, exist_ok=True)
+joblib.dump(best_svm, os.path.join(MODELS_DIR, "linear_svc_tuned.joblib"))
+joblib.dump(log_reg, os.path.join(MODELS_DIR, "logistic_regression_baseline.joblib"))
+print(f"[SUCCESS] Saved LinearSVC (C = {best_svm.C}) and LogisticRegression to: {MODELS_DIR}")

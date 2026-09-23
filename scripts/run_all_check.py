@@ -34,6 +34,8 @@ SCRIPTS = [
         [
             "data/processed/test_predictions_evaluated.csv",
             "data/processed/model_family_comparison.csv",
+            "models/linear_svc_tuned.joblib",
+            "models/logistic_regression_baseline.joblib",
         ],
     ),
     (
